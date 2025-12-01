@@ -19,11 +19,22 @@ type TokenRequest struct {
 	Name     string `json:"name,omitempty"`
 }
 
+type CreateTokenRequest struct {
+	RoomName            string `json:"roomName"`
+	ParticipantName     string `json:"participantName"`
+	ParticipantIdentity string `json:"participantIdentity,omitempty"`
+}
+
 type TokenResponse struct {
 	Token    string `json:"token"`
 	URL      string `json:"url"`
 	RoomName string `json:"roomName"`
 	Identity string `json:"identity"`
+}
+
+type CreateTokenResponse struct {
+	AccessToken string `json:"accessToken"`
+	Url         string `json:"url"`
 }
 
 type ErrorResponse struct {
@@ -45,6 +56,7 @@ func main() {
 
 	// API endpoints
 	router.HandleFunc("/token", generateTokenHandler).Methods("POST")
+	router.HandleFunc("/api/create-token", createTokenHandler).Methods("POST")
 	router.HandleFunc("/health", healthCheckHandler).Methods("GET")
 
 	// Serve static files
@@ -140,6 +152,41 @@ func generateAccessToken(roomName, identity, name string) (string, error) {
 	}
 
 	return at.ToJWT()
+}
+
+func createTokenHandler(w http.ResponseWriter, r *http.Request) {
+	var req CreateTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate request
+	if req.RoomName == "" || req.ParticipantName == "" {
+		respondWithError(w, http.StatusBadRequest, "roomName and participantName are required")
+		return
+	}
+
+	// Generate identity if not provided
+	identity := req.ParticipantIdentity
+	if identity == "" {
+		identity = req.ParticipantName
+	}
+
+	// Generate token
+	token, err := generateAccessToken(req.RoomName, identity, req.ParticipantName)
+	if err != nil {
+		log.Printf("Error generating token: %v", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to generate token")
+		return
+	}
+
+	response := CreateTokenResponse{
+		AccessToken: token,
+		Url:         livekitURL,
+	}
+
+	respondWithJSON(w, http.StatusOK, response)
 }
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
