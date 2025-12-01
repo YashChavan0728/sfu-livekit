@@ -1,0 +1,32 @@
+# Ignore environment files with secrets
+.env
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go dependencies
+go.sum
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# LiveKit binary (if downloaded)
+livekit-server
+livekit-server.exe

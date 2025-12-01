@@ -1,0 +1,9 @@
+version: "2"
+authtoken: 2EeXCfvXClESCBeiv1tXf5A7gBJ_6zFqdmDRFTwKbvBZ8gKiA
+tunnels:
+  api:
+    proto: http
+    addr: 3000
+  livekit:
+    proto: http
+    addr: 7880
